@@ -2,7 +2,8 @@
 #define LCD_I2C_h
 
 #include "application.h"
-#include "Print.h"
+#include <Wire.h>
+#include <Print.h>
 
 #define LCD_SLAVE_ADDR 0x3C
 
@@ -47,10 +48,7 @@
 class LCD_I2C : public Print {
 public:
   LCD_I2C(void);
-
-  void init(uint8_t fourbitmode);
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
-
   void clear();
   void home();
 
@@ -74,16 +72,10 @@ public:
   using Print::write;
 
 private:
-  void send(uint8_t);
-  void write4bits(uint8_t);
-  void write8bits(uint8_t);
-  void pulseEnable();
-
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
   uint8_t _displaymode;
-  uint8_t _initialized;
-  uint8_t _numlines, _currline;
+  uint8_t _cols, _rows, _charsize;
 };
 
 #endif

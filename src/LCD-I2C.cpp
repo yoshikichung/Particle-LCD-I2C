@@ -1,26 +1,24 @@
-// YJD1602A/JLX1602A LCD Driver Library in I2C mode
+// YJD1602A/JLX1602A LCD Display Library in I2C mode
 #include "LCD_I2C.h"
 
-LCD_I2C::LCD_I2C(void) {
-  init(0);
-}
+LCD_I2C::LCD_I2C(void) {}
 
-void LCD_I2C::init(uint8_t fourbitmode) {
-  if (fourbitmode)
-    _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-  else 
-    _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
-}
+void LCD_I2C::begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS) {
+  Wire.begin();
 
-void LCD_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
-  if (lines > 1) {
+  _cols = cols;
+  _rows = rows;
+  _charsize = charsize;
+
+  //_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
+  _displayfunction = LCD_8BITMODE | LCD_1LINE | LCD_5x8DOTS;
+
+  if (_rows > 1) {
     _displayfunction |= LCD_2LINE;
   }
-  _numlines = lines;
-  _currline = 0;
 
   // for some 1 line displays you can select a 10 pixel high font
-  if ((dotsize != 0) && (lines == 1)) {
+  if ((_charsize != 0) && (_rows == 1)) {
     _displayfunction |= LCD_5x10DOTS;
   }
 
@@ -29,40 +27,15 @@ void LCD_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // before sending commands.
   delayMicroseconds(50000); 
   
-  //put the LCD into 4 bit or 8 bit mode
-  if (!(_displayfunction & LCD_8BITMODE)) {
-    // this is according to the hitachi HD44780 datasheet, figure 24, pg 46
+  //put the LCD into 8 bit mode
+  // this is according to the hitachi HD44780 datasheet, page 45 figure 23
+  command(LCD_FUNCTIONSET | _displayfunction);
+  delayMicroseconds(4500);  // wait more than 4.1ms
+  command(LCD_FUNCTIONSET | _displayfunction);
+  delayMicroseconds(150);
+  command(LCD_FUNCTIONSET | _displayfunction);
 
-    // we start in 8bit mode, try to set 4 bit mode
-    write4bits(0x03);
-    delayMicroseconds(4500); // wait min 4.1ms
-
-    // second try
-    write4bits(0x03);
-    delayMicroseconds(4500); // wait min 4.1ms
-    
-    // third go!
-    write4bits(0x03); 
-    delayMicroseconds(150);
-
-    // finally, set to 4-bit interface
-    write4bits(0x02); 
-  } else {
-    // this is according to the hitachi HD44780 datasheet, page 45 figure 23
-
-    // Send function set command sequence
-    command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(4500);  // wait more than 4.1ms
-
-    // second try
-    command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(150);
-
-    // third go
-    command(LCD_FUNCTIONSET | _displayfunction);
-  }
-
-  // finally, set # lines, font size, etc.
+  // finally, set lines, font size, etc.
   command(LCD_FUNCTIONSET | _displayfunction);  
 
   // turn the display on with no cursor or blinking default
@@ -74,15 +47,18 @@ void LCD_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 
   // Initialize to default text direction (for romance languages)
   _displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
+
   // set the entry mode
   command(LCD_ENTRYMODESET | _displaymode);
+
+  home();
 }
 
 //// high level commands, for the user
 
 void LCD_I2C::clear() {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-  delayMicroseconds(2000);  // this command takes a long time!
+  delayMicroseconds(2000);    // this command takes a long time!
 }
 
 void LCD_I2C::home() {
@@ -92,8 +68,8 @@ void LCD_I2C::home() {
 
 void LCD_I2C::setCursor(uint8_t col, uint8_t row) {
   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-  if ( row >= _numlines ) {
-    row = _numlines-1;    // we count rows starting w/0
+  if ( row >= _rows ) {
+    row = _rows-1;    // we count rows starting w/0
   }
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
@@ -167,14 +143,10 @@ void LCD_I2C::noAutoscroll(void) {
 // Allows us to fill the first 8 CGRAM locations with custom characters
 void LCD_I2C::createChar(uint8_t location, uint8_t charmap[]) {
   location &= 0x7; // we only have 8 locations 0-7
-  Wire.beginTransmission((byte)LCD_SLAVE_ADDR);
-  Wire.write((byte)0x80);
-  Wire.write((byte)(LCD_SETCGRAMADDR | (location << 3)));
-  Wire.write((byte)0x40); //Co=0,A0=1,data
+  command(LCD_SETCGRAMADDR | (location << 3));
   for (int i=0; i<8; i++) {
-    Wire.write((byte)charmap[i]);
+    write(charmap[i]);
   }
-  Wire.endTransmission();
 }
 
 //// mid level commands, for sending data/commands
@@ -192,15 +164,4 @@ inline size_t LCD_I2C::write(uint8_t value) {
   Wire.write((byte)value);
   Wire.endTransmission();
   //return 1; // assume sucess
-}
-
-//// low level data pushing commands
-
-void LCD_I2C::pulseEnable(void) {
-}
-
-void LCD_I2C::write4bits(uint8_t value) {
-}
-
-void LCD_I2C::write8bits(uint8_t value) {
 }
