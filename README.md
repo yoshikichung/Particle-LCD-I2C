@@ -1,2 +1,3 @@
 # Particle-LCD-I2C
-LCD-I2C library for Particle devices.
+
+LCD-I2C library for Particle.

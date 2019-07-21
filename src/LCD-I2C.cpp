@@ -1,9 +1,9 @@
 // YJD1602A/JLX1602A LCD Display Library in I2C mode
-#include "LCD_I2C.h"
+#include "LCD-I2C.h"
 
-LCD_I2C::LCD_I2C(void) {}
+LCD-I2C::LCD-I2C (void) {}
 
-void LCD_I2C::begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS) {
+void LCD-I2C::begin (uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS) {
   Wire.begin();
 
   _cols = cols;
@@ -56,17 +56,17 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS) 
 
 //// high level commands, for the user
 
-void LCD_I2C::clear() {
+void LCD-I2C::clear () {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
   delayMicroseconds(2000);    // this command takes a long time!
 }
 
-void LCD_I2C::home() {
+void LCD-I2C::home () {
   command(LCD_RETURNHOME);  // set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
 }
 
-void LCD_I2C::setCursor(uint8_t col, uint8_t row) {
+void LCD-I2C::setCursor (uint8_t col, uint8_t row) {
   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
   if ( row >= _rows ) {
     row = _rows-1;    // we count rows starting w/0
@@ -75,73 +75,73 @@ void LCD_I2C::setCursor(uint8_t col, uint8_t row) {
 }
 
 // Turn the display on/off (quickly)
-void LCD_I2C::noDisplay() {
+void LCD-I2C::noDisplay () {
   _displaycontrol &= ~LCD_DISPLAYON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
-void LCD_I2C::display() {
+void LCD-I2C::display () {
   _displaycontrol |= LCD_DISPLAYON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turns the underline cursor on/off
-void LCD_I2C::noCursor() {
+void LCD-I2C::noCursor () {
   _displaycontrol &= ~LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
-void LCD_I2C::cursor() {
+void LCD-I2C::cursor () {
   _displaycontrol |= LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turn on and off the blinking cursor
-void LCD_I2C::noBlink() {
+void LCD-I2C::noBlink () {
   _displaycontrol &= ~LCD_BLINKON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
-void LCD_I2C::blink() {
+void LCD-I2C::blink () {
   _displaycontrol |= LCD_BLINKON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // These commands scroll the display without changing the RAM
-void LCD_I2C::scrollDisplayLeft(void) {
+void LCD-I2C::scrollDisplayLeft (void) {
   command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT);
 }
 
-void LCD_I2C::scrollDisplayRight(void) {
+void LCD-I2C::scrollDisplayRight (void) {
   command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT);
 }
 
 // This is for text that flows Left to Right
-void LCD_I2C::leftToRight(void) {
+void LCD-I2C::leftToRight (void) {
   _displaymode |= LCD_ENTRYLEFT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This is for text that flows Right to Left
-void LCD_I2C::rightToLeft(void) {
+void LCD-I2C::rightToLeft (void) {
   _displaymode &= ~LCD_ENTRYLEFT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'right justify' text from the cursor
-void LCD_I2C::autoscroll(void) {
+void LCD-I2C::autoscroll (void) {
   _displaymode |= LCD_ENTRYSHIFTINCREMENT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'left justify' text from the cursor
-void LCD_I2C::noAutoscroll(void) {
+void LCD-I2C::noAutoscroll (void) {
   _displaymode &= ~LCD_ENTRYSHIFTINCREMENT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // Allows us to fill the first 8 CGRAM locations with custom characters
-void LCD_I2C::createChar(uint8_t location, uint8_t charmap[]) {
+void LCD-I2C::createChar (uint8_t location, uint8_t charmap[]) {
   location &= 0x7; // we only have 8 locations 0-7
   command(LCD_SETCGRAMADDR | (location << 3));
   for (int i=0; i<8; i++) {
@@ -151,14 +151,14 @@ void LCD_I2C::createChar(uint8_t location, uint8_t charmap[]) {
 
 //// mid level commands, for sending data/commands
 
-inline void LCD_I2C::command(uint8_t value) {
+inline void LCD-I2C::command (uint8_t value) {
   Wire.beginTransmission((byte)LCD_SLAVE_ADDR);
   Wire.write((byte)0x80); //Co=1,A0=0,command
   Wire.write((byte)value);
   Wire.endTransmission();
 }
 
-inline size_t LCD_I2C::write(uint8_t value) {
+inline size_t LCD-I2C::write (uint8_t value) {
   Wire.beginTransmission((byte)LCD_SLAVE_ADDR);
   Wire.write((byte)0x40); //Co=0,A0=1,data
   Wire.write((byte)value);

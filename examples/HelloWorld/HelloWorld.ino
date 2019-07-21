@@ -1,9 +1,9 @@
 // Example for display string and blink cursor
 
-#include "LCD_I2C.h"
+#include "LCD-I2C.h"
 
 // Initialize the library
-LCD_I2C lcd;
+LCD-I2C lcd;
 
 void setup() {
   // Set up the columns and rows of LCD

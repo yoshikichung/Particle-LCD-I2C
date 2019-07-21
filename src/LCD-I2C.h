@@ -45,30 +45,30 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-class LCD_I2C : public Print {
+class LCD-I2C : public Print {
 public:
-  LCD_I2C(void);
-  void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
-  void clear();
-  void home();
+  LCD-I2C (void);
+  void begin (uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
+  void clear ();
+  void home ();
 
-  void noDisplay();
-  void display();
-  void noBlink();
-  void blink();
-  void noCursor();
-  void cursor();
-  void scrollDisplayLeft();
-  void scrollDisplayRight();
-  void leftToRight();
-  void rightToLeft();
-  void autoscroll();
-  void noAutoscroll();
+  void noDisplay ();
+  void display ();
+  void noBlink ();
+  void blink ();
+  void noCursor ();
+  void cursor ();
+  void scrollDisplayLeft ();
+  void scrollDisplayRight ();
+  void leftToRight ();
+  void rightToLeft ();
+  void autoscroll ();
+  void noAutoscroll ();
 
-  void createChar(uint8_t, uint8_t[]);
-  void setCursor(uint8_t, uint8_t); 
-  void command(uint8_t);
-  virtual size_t write(uint8_t);
+  void createChar (uint8_t, uint8_t[]);
+  void setCursor (uint8_t, uint8_t); 
+  void command (uint8_t);
+  virtual size_t write (uint8_t);
   using Print::write;
 
 private:
